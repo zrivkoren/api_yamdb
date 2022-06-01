@@ -31,7 +31,8 @@ class User(AbstractUser):
         blank=True
     )
     role = models.CharField(
-        max_length=16
+        max_length=16,
+
     )
     # Enum: "user" "moderator" "admin"
     # Администратор, модератор или пользователь. По умолчанию user.
@@ -87,8 +88,8 @@ class Title(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(current_year())]
     )
-    discription = models.TextField(
-        verbose_name='discriptions'
+    description = models.TextField(
+        verbose_name='description'
     )
     genre = models.ManyToManyField(
         Genre,
