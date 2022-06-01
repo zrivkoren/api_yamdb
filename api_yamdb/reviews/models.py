@@ -1,6 +1,12 @@
+import datetime as dt
+
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
+
+
+def current_year():
+    return dt.date.today().year
 
 
 class User(AbstractUser):
@@ -32,15 +38,76 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    pass
+    name = models.CharField(
+        verbose_name='categories',
+        max_length=200
+    )
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'категория'
+        verbose_name_plural = 'категории'
+
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):
-    pass
+    name = models.CharField(
+        verbose_name='genres',
+        max_length=200
+    )
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'жанр'
+        verbose_name_plural = 'жанры'
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
-    pass
+    name = models.CharField(
+        verbose_name='title',
+        max_length=200,
+        null=False,
+    )
+    year = models.IntegerField(
+        verbose_name='yaers',
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(current_year())]
+    )
+    discription = models.TextField(
+        verbose_name='discriptions'
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        verbose_name='genres'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='categories',
+    )
+
+    class Meta:
+        verbose_name = 'произведение'
+        verbose_name_plural = 'произведения'
+
+    def __str__(self):
+        return self.name
 
 
 class Review(models.Model):
@@ -72,6 +139,3 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
-
-
-
