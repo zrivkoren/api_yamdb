@@ -137,6 +137,7 @@ class GenreTitle(models.Model):
     def __str__(self):
         return f'{self.genre} {self.title}'
 
+
 class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')
