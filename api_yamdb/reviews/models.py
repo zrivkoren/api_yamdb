@@ -10,6 +10,13 @@ def current_year():
 
 
 class User(AbstractUser):
+    USER, MODERATOR, ADMIN = 'user', 'moderator', 'admin'
+    ROLES_CHOICES = [
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Админ'),
+    ]
+
     username = models.CharField(
         max_length=150,
         unique=True
@@ -32,7 +39,8 @@ class User(AbstractUser):
     )
     role = models.CharField(
         max_length=16,
-
+        choices=ROLES_CHOICES,
+        default=USER
     )
     # Enum: "user" "moderator" "admin"
     # Администратор, модератор или пользователь. По умолчанию user.
