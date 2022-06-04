@@ -42,8 +42,6 @@ class User(AbstractUser):
         choices=ROLES_CHOICES,
         default=USER
     )
-    # Enum: "user" "moderator" "admin"
-    # Администратор, модератор или пользователь. По умолчанию user.
 
 
 class Category(models.Model):
@@ -123,7 +121,7 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     genre = models.ForeignKey(
-        Genre, 
+        Genre,
         on_delete=models.CASCADE
     )
     title = models.ForeignKey(
