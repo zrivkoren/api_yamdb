@@ -6,6 +6,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
 from .serializers import UserSerializer, SignupSerializer, TokenSerializer
@@ -13,6 +14,7 @@ from .serializers import UserSerializer, SignupSerializer, TokenSerializer
 DEFAULT_FROM_EMAIL = 'admin@yambd.com'
 SUBJECT = 'YaMDb. Вам письмо счастья'
 MESSAGE = 'Код подтверждения - {}'
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -44,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user, created = User.get_or_create(
+    user, created = User.objects.get_or_create(
         username=serializer.validated_data['username'],
         email=serializer.validated_data['email'],
     )
@@ -68,5 +70,12 @@ def token(request):
         User,
         username=serializer.validated_data['username'],
     )
-    # сделать механизм токена
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    if not default_token_generator.check_token(
+            user,
+            serializer.validated_data['confirmation_code']):
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    token = AccessToken.for_user(user)
+    data = {
+        'token': str(token),
+    }
+    return Response(data)
