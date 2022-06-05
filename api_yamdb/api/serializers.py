@@ -16,7 +16,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SignupSerializer(serializers.Serializer):
-    pass
+    email = serializers.EmailField(
+        max_length=254,
+        required=True
+    )
+    username = serializers.CharField(
+        max_length=150,
+        required=True
+    )
 
 
 class TokenSerializer(serializers.Serializer):
