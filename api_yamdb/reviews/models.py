@@ -154,6 +154,10 @@ class Review(models.Model):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
 
+    def __str__(self):
+        mini_title = str(self.title)[:20]
+        return f'({self.title.pk}){mini_title} - ({self.pk}){self.text}'[:50]
+
 
 class Comment(models.Model):
     author = models.ForeignKey(
