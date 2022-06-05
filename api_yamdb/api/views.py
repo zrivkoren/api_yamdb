@@ -4,10 +4,15 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 
 from reviews.models import User
 from .serializers import UserSerializer, SignupSerializer, TokenSerializer
 
+DEFAULT_FROM_EMAIL = 'admin@yambd.com'
+SUBJECT = 'YaMDb. Вам письмо счастья'
+MESSAGE = 'Код подтверждения - {}'
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -41,9 +46,16 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     user, created = User.get_or_create(
         username=serializer.validated_data['username'],
-        email=serializer.validated_data['email']
+        email=serializer.validated_data['email'],
     )
-    # здесь сделать механизм кода подтверждения и отправку письма
+    confirmation_code = default_token_generator.make_token(user)
+
+    send_mail(
+        SUBJECT,
+        MESSAGE.format(confirmation_code),
+        DEFAULT_FROM_EMAIL,
+        [user.email],
+    )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
