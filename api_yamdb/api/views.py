@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.exceptions import ValidationError
+from django.db import IntegrityError
 
 from reviews.models import User
 from .serializers import UserSerializer, SignupSerializer, TokenSerializer
@@ -48,10 +50,13 @@ class UserViewSet(viewsets.ModelViewSet):
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user, created = User.objects.get_or_create(
-        username=serializer.validated_data['username'],
-        email=serializer.validated_data['email'],
-    )
+    try:
+        user, created = User.objects.get_or_create(
+            email=serializer.validated_data['email'],
+            username=serializer.validated_data['username'],
+        )
+    except IntegrityError:
+        raise ValidationError(f'Ошибка валидации!')
     confirmation_code = default_token_generator.make_token(user)
 
     send_mail(
