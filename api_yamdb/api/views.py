@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
 from .serializers import UserSerializer, SignupSerializer, TokenSerializer
+from .permissions import IsAdmin
 
 DEFAULT_FROM_EMAIL = 'admin@yambd.com'
 SUBJECT = 'YaMDb. Вам письмо счастья'
@@ -21,6 +22,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     lookup_field = 'username'
+    permission_classes = (IsAdmin,)
 
     @action(
         methods=['get', 'patch'],
