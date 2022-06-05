@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters, viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -10,9 +10,18 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError
 
-from reviews.models import User
-from .serializers import UserSerializer, SignupSerializer, TokenSerializer
-from .permissions import IsAdmin
+from reviews.models import User, Title, Genre, Category
+from .filters import TitleFilter
+from .serializers import (
+    UserSerializer,
+    SignupSerializer,
+    TokenSerializer,
+    CategorySerializer,
+    GenreSerializer,
+    CreateTitleSerializer,
+    TitleSerializer
+)
+from .permissions import IsAdmin, IsAdminOrRead
 
 DEFAULT_FROM_EMAIL = 'admin@yambd.com'
 SUBJECT = 'YaMDb. Вам письмо счастья'
@@ -86,3 +95,43 @@ def token(request):
         'token': str(token),
     }
     return Response(data)
+
+
+class CategoryViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Category.objects.all()
+    pagination_class = PageNumberPagination
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrRead]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('=name',)
+    lookup_field = ('slug')
+
+
+class GenreViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = [filters.SearchFilter]
+    permission_classes = [IsAdminOrRead]
+    search_fields = ('=name',)
+    lookup_field = ('slug')
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    permission_classes = [IsAdminOrRead]
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return CreateTitleSerializer
+        return TitleSerializer
