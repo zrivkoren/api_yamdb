@@ -4,19 +4,19 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 
+USER, MODERATOR, ADMIN = 'user', 'moderator', 'admin'
+ROLES_CHOICES = [
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Админ'),
+]
+
 
 def current_year():
     return dt.date.today().year
 
 
 class User(AbstractUser):
-    USER, MODERATOR, ADMIN = 'user', 'moderator', 'admin'
-    ROLES_CHOICES = [
-        (USER, 'Пользователь'),
-        (MODERATOR, 'Модератор'),
-        (ADMIN, 'Админ'),
-    ]
-
     username = models.CharField(
         max_length=150,
         unique=True
@@ -42,6 +42,18 @@ class User(AbstractUser):
         choices=ROLES_CHOICES,
         default=USER
     )
+
+    @property
+    def is_admin(self):
+        return self.is_staff or self.role == ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_user(self):
+        return self.role == USER
 
 
 class Category(models.Model):
