@@ -14,6 +14,13 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
         )
 
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя me запрещено!'
+            )
+        return value
+
 
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -24,6 +31,13 @@ class SignupSerializer(serializers.Serializer):
         max_length=150,
         required=True
     )
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Имя пользователя me запрещено!'
+            )
+        return value
 
 
 class TokenSerializer(serializers.Serializer):
