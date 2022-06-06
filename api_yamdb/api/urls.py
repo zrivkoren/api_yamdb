@@ -1,10 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import include, path
 
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
 from .views import (
     UserViewSet, GenreViewSet, CategoryViewSet, TitleViewSet,
     signup, token, ReviewViewSet, CommentViewSet
@@ -28,14 +24,8 @@ router_v1.register(
     basename='comments'
 )
 
-
-
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/token/', token, name='token'),
-    #path('v1/auth/token/refresh/', TokenRefreshView.as_view(),
-    # name='token_refresh'),
     path('v1/auth/signup/', signup, name='signup'),
-    #path('v1/users/me/', ),
-
 ]

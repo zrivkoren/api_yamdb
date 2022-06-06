@@ -70,9 +70,14 @@ Cоздать и активировать виртуальное окружение:
     python manage.py makemigrations
     python manage.py migrate
 
+Загрузить тестовые данные (при необходимости):
+
+    python load_csv.py
+
 Запустить проект:
 
     python manage.py runserver
+
 
 ## Состав команды разработчиков и их зоны ответственности
 
