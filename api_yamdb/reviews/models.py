@@ -170,6 +170,12 @@ class Review(models.Model):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         ordering = ['author']
+        constraints = (
+            models.UniqueConstraint(
+                fields=('author', 'title'),
+                name='unique author-title review'
+            ),
+        )
 
     def __str__(self):
         mini_title = str(self.title)[:20]
