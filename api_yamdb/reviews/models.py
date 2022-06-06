@@ -55,6 +55,9 @@ class User(AbstractUser):
     def is_user(self):
         return self.role == USER
 
+    class Meta:
+        ordering = ['username']
+
 
 class Category(models.Model):
     name = models.CharField(
@@ -70,6 +73,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'категории'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -89,6 +93,7 @@ class Genre(models.Model):
     class Meta:
         verbose_name = 'жанр'
         verbose_name_plural = 'жанры'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -126,6 +131,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'произведения'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -163,6 +169,7 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
+        ordering = ['author']
 
     def __str__(self):
         mini_title = str(self.title)[:20]
@@ -181,3 +188,4 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
+        ordering = ['author']
