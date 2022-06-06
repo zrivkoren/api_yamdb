@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError
+from django.db.models import Avg
 
 from reviews.models import User, Title, Genre, Category
 from .filters import TitleFilter
@@ -129,7 +130,8 @@ class GenreViewSet(
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('-id')
     permission_classes = [IsAdminOrRead]
     filterset_class = TitleFilter
 
