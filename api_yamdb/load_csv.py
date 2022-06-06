@@ -1,4 +1,5 @@
-import csv, sqlite3
+import csv
+import sqlite3
 
 load_data = [
     {
@@ -95,34 +96,40 @@ load_data = [
         }
     },
 ]
-con = sqlite3.connect('db.sqlite3')
-cur = con.cursor()
 
-for one_table in load_data:
-    with open(one_table['file_name'], 'r', encoding="utf8") as f:
-        dr = csv.DictReader(f, delimiter=",")
-        to_db = []
-        for row_csv in dr:
-            one_row = []
-            for val in one_table['fields_mapping'].values():
-                one_row.append(row_csv[val])
-            to_db.append(one_row)
+if __name__ == '__main__':
+    con = sqlite3.connect('db.sqlite3')
+    cur = con.cursor()
 
-        str_field_from_mapping = ', '.join(one_table['fields_mapping'].keys())
-        str_field_from_defaults = ', '.join(one_table['fields_defaults'].keys())
-        str_field = str_field_from_mapping
-        if str_field_from_defaults != '':
-            str_field = str_field + ', ' + str_field_from_defaults
+    for one_table in load_data:
+        with open(one_table['file_name'], 'r', encoding="utf8") as f:
+            dr = csv.DictReader(f, delimiter=",")
+            to_db = []
+            for row_csv in dr:
+                one_row = []
+                for val in one_table['fields_mapping'].values():
+                    one_row.append(row_csv[val])
+                to_db.append(one_row)
 
-        str_value = '?, ' * len(one_table['fields_mapping'])
-        str_value_defaults = '", "'.join(one_table['fields_defaults'].values())
-        if str_value_defaults != '':
-            str_value = str_value + '"' + str_value_defaults + '"'
-        else:
-            str_value = str_value[:-2]
-        table_name = one_table['table_name']
-        sql_str = f'INSERT INTO {table_name} ({str_field}) VALUES ({str_value});'
-        print(sql_str)
-    cur.executemany(sql_str, to_db)
-    con.commit()
-con.close()
+            str_field_from_mapping = (', '.join(one_table['fields_mapping']
+                                                .keys()))
+            str_field_from_defaults = (', '.join(one_table['fields_defaults']
+                                                 .keys()))
+            str_field = str_field_from_mapping
+            if str_field_from_defaults != '':
+                str_field = str_field + ', ' + str_field_from_defaults
+
+            str_value = '?, ' * len(one_table['fields_mapping'])
+            str_value_defaults = ('", "'.join(one_table['fields_defaults']
+                                              .values()))
+            if str_value_defaults != '':
+                str_value = str_value + '"' + str_value_defaults + '"'
+            else:
+                str_value = str_value[:-2]
+            table_name = one_table['table_name']
+            sql_str = (f'INSERT INTO {table_name} ({str_field}) '
+                       f'VALUES ({str_value});')
+            print(sql_str)
+        cur.executemany(sql_str, to_db)
+        con.commit()
+    con.close()

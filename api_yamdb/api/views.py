@@ -23,7 +23,7 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer,
 )
-from .permissions import IsAdmin, IsAdminOrRead
+from .permissions import IsAdmin, IsAdminOrRead, IsAdminOrModeratorOrRead
 
 DEFAULT_FROM_EMAIL = 'admin@yambd.com'
 SUBJECT = 'YaMDb. Вам письмо счастья'
@@ -67,7 +67,7 @@ def signup(request):
             username=serializer.validated_data['username'],
         )
     except IntegrityError:
-        raise ValidationError(f'Ошибка валидации!')
+        raise ValidationError('Ошибка валидации!')
     confirmation_code = default_token_generator.make_token(user)
 
     send_mail(
@@ -137,9 +137,11 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'update', 'partial_update'):
             return CreateTitleSerializer
         return TitleSerializer
-      
+
+
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    permission_classes = (IsAdminOrModeratorOrRead,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -148,17 +150,26 @@ class CommentViewSet(viewsets.ModelViewSet):
         reviews_in_title = get_object_or_404(Title, id=title_id).reviews.all()
         return get_object_or_404(reviews_in_title, id=review_id).comments.all()
 
-    def perform_create(self, serializer):  # to do
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title=title)
-        
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        review_id = self.kwargs.get('review_id')
+
+        reviews_in_title = get_object_or_404(Title, id=title_id).reviews.all()
+        review = get_object_or_404(reviews_in_title, id=review_id)
+
+        serializer.save(author=self.request.user, review=review)
+
+
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (IsAdminOrModeratorOrRead,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         return get_object_or_404(Title, id=title_id).reviews.all()
 
-    def perform_create(self, serializer):  # to do
+    def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        if title.reviews.filter(author=self.request.user).exists():
+            raise ValidationError
         serializer.save(author=self.request.user, title=title)
