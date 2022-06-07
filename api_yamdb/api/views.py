@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.exceptions import ValidationError
 from django.db.models import Avg
 
 from reviews.models import User, Title, Genre, Category, Review
