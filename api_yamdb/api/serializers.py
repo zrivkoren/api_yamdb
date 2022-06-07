@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from reviews.models import User, Title, Genre, Category, Review, Comment
 
 
@@ -111,3 +112,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            title_id = (self.context['request']
+                        .parser_context['kwargs']['title_id'])
+            user = self.context['request'].user
+            if user.reviews.filter(title_id=title_id).exists():
+                raise serializers.ValidationError(
+                    'Второй отзыв от автора на одно произведение.'
+                )
+        return data

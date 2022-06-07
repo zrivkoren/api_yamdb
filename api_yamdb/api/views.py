@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Avg
 
-from reviews.models import User, Title, Genre, Category
+from reviews.models import User, Title, Genre, Category, Review
 from .filters import TitleFilter
 from .serializers import (
     UserSerializer,
@@ -149,16 +149,14 @@ class CommentViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
 
-        reviews_in_title = get_object_or_404(Title, id=title_id).reviews.all()
-        return get_object_or_404(reviews_in_title, id=review_id).comments.all()
+        return (get_object_or_404(Review, id=review_id, title_id=title_id)
+                .comments.all())
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
 
-        reviews_in_title = get_object_or_404(Title, id=title_id).reviews.all()
-        review = get_object_or_404(reviews_in_title, id=review_id)
-
+        review = get_object_or_404(Review, id=review_id, title_id=title_id)
         serializer.save(author=self.request.user, review=review)
 
 
@@ -172,6 +170,4 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        if title.reviews.filter(author=self.request.user).exists():
-            raise ValidationError
         serializer.save(author=self.request.user, title=title)
