@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status, filters, viewsets, mixins
+from rest_framework import status, filters, viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -8,7 +8,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.exceptions import ValidationError
-from django.db import IntegrityError
 from django.db.models import Avg
 
 from reviews.models import User, Title, Genre, Category
@@ -25,10 +24,7 @@ from .serializers import (
     CommentSerializer,
 )
 from .permissions import IsAdmin, IsAdminOrRead, IsAdminOrModeratorOrRead
-
-DEFAULT_FROM_EMAIL = 'admin@yambd.com'
-SUBJECT = 'YaMDb. Вам письмо счастья'
-MESSAGE = 'Код подтверждения - {}'
+from api_yamdb.settings import DEFAULT_FROM_EMAIL, SUBJECT, MESSAGE
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -46,7 +42,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         if request.method == 'GET':
             serializer = UserSerializer(request.user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
         serializer = UserSerializer(
             request.user,
             data=request.data,
@@ -62,13 +58,10 @@ class UserViewSet(viewsets.ModelViewSet):
 def signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    try:
-        user, created = User.objects.get_or_create(
-            email=serializer.validated_data['email'],
-            username=serializer.validated_data['username'],
-        )
-    except IntegrityError:
-        raise ValidationError('Ошибка валидации!')
+    user, created = User.objects.get_or_create(
+        email=serializer.validated_data['email'],
+        username=serializer.validated_data['username'],
+    )
     confirmation_code = default_token_generator.make_token(user)
 
     send_mail(
@@ -82,7 +75,7 @@ def signup(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def token(request):
+def get_token(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(

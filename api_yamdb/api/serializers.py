@@ -37,11 +37,13 @@ class SignupSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Имя пользователя me запрещено!'
             )
+        elif User.objects.filter(username__iexact=value.lower()):
+            raise serializers.ValidationError('Пользователь уже существует')
         return value
 
     def validate_email(self, value):
         lower_email = value.lower()
-        if User.objects.filter(email__iexact=lower_email).exists():
+        if User.objects.filter(email__iexact=value.lower()).exists():
             raise serializers.ValidationError('Пользователь с данным email '
                                               'уже существует.')
         return lower_email
