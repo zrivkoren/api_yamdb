@@ -25,10 +25,10 @@ class UserSerializer(serializers.ModelSerializer):
 class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=254,
-        required=True
+        required=True,
+
     )
     username = serializers.CharField(
-        max_length=150,
         required=True
     )
 
@@ -39,24 +39,28 @@ class SignupSerializer(serializers.Serializer):
             )
         return value
 
+    def validate_email(self, value):
+        lower_email = value.lower()
+        if User.objects.filter(email__iexact=lower_email).exists():
+            raise serializers.ValidationError('Пользователь с данным email '
+                                              'уже существует.')
+        return lower_email
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=150,
-        required=True,
+        required=True
     )
     confirmation_code = serializers.CharField(required=True)
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         exclude = ('id',)
