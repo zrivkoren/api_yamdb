@@ -25,11 +25,17 @@ from .serializers import (
 from .permissions import IsAdmin, IsAdminOrRead, IsAdminOrModeratorOrRead
 from api_yamdb.settings import DEFAULT_FROM_EMAIL, SUBJECT, MESSAGE
 
+MIXINS_VIEWSET_LIST = (
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+)
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
     lookup_field = 'username'
     permission_classes = (IsAdmin,)
 
@@ -92,14 +98,8 @@ def get_token(request):
     return Response(data)
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
+class CategoryViewSet(*MIXINS_VIEWSET_LIST):
     queryset = Category.objects.all()
-    pagination_class = PageNumberPagination
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrRead]
     filter_backends = (filters.SearchFilter,)
@@ -107,12 +107,7 @@ class CategoryViewSet(
     lookup_field = ('slug')
 
 
-class GenreViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
-):
+class GenreViewSet(*MIXINS_VIEWSET_LIST):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = [filters.SearchFilter]
