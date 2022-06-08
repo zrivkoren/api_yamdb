@@ -1,5 +1,4 @@
 from rest_framework import status, filters, viewsets, mixins
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
@@ -25,11 +24,11 @@ from .serializers import (
 from .permissions import IsAdmin, IsAdminOrRead, IsAdminOrModeratorOrRead
 from api_yamdb.settings import DEFAULT_FROM_EMAIL, SUBJECT, MESSAGE
 
-MIXINS_VIEWSET_LIST = (
+MIXINS_VIEWSET_TUPLE = (
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 )
 
 
@@ -98,7 +97,7 @@ def get_token(request):
     return Response(data)
 
 
-class CategoryViewSet(*MIXINS_VIEWSET_LIST):
+class CategoryViewSet(*MIXINS_VIEWSET_TUPLE):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrRead]
@@ -107,7 +106,7 @@ class CategoryViewSet(*MIXINS_VIEWSET_LIST):
     lookup_field = ('slug')
 
 
-class GenreViewSet(*MIXINS_VIEWSET_LIST):
+class GenreViewSet(*MIXINS_VIEWSET_TUPLE):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = [filters.SearchFilter]
